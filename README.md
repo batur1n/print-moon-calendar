@@ -1,3 +1,9 @@
+Works with Python 3.8
+
+Dependencies:
+pip install datetime
+pip install yattag
+
 Usage:
 python generate_html.py
 
