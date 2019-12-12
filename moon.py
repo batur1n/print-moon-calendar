@@ -77,6 +77,8 @@ class MoonPhase:
 
         self.__dict__.update(phase(self.date))
 
+        self.zodiac_sign = zodiac(date=self.date)
+
         self.phase_text = phase_string(self.phase)
 
     def __getattr__(self, a):
@@ -544,5 +546,5 @@ if __name__ == '__main__':
         date = DateTime.now()+timedelta(days=i)
         m = MoonPhase(date)
         s = """%s. The moon is %s, %.1f%% illuminated, %.1f days old. Zodiac sign is: %s, moon day: %s""" %\
-            (date, m.phase_text, m.illuminated * 100, m.age, zodiac(date), ceil(m.age))
+            (date.day, m.phase_text, m.illuminated * 100, m.age, m.zodiac_sign, ceil(m.age))
         print (s)
