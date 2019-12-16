@@ -1,7 +1,7 @@
 Works with Python 3.8
 
 Dependencies:
-pip install datetime, yattag
+pip install datetime yattag
 
 Usage:
 python generate_html.py
