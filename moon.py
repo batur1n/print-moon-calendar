@@ -325,7 +325,7 @@ def phase(phase_date=DateTime.now()):
         'angular_diameter': moon_angular_diameter,
         'sun_distance': sun_dist,
         'sun_angular_diameter': sun_angular_diameter,
-        'ecliptic_longitude': lPP
+        'true_moon_longitude': lPP
         }
 
     return res
@@ -507,44 +507,43 @@ def kepler(m, ecc):
     return e
 
 def zodiac(date=DateTime.now()):
+    # returns current zodiac sign of the moon, not very accurate
     data = phase(date)
-    longitude = data['ecliptic_longitude']
-    print(longitude)
-    if (longitude <  33.18):
-      zodiac = 'Pisces'
-    elif (longitude <  51.16):
-      zodiac = 'Aries'
-    elif (longitude <  93.44):
-      zodiac = 'Taurus'
-    elif (longitude < 119.48):
-      zodiac = 'Gemini'
-    elif (longitude < 135.30):
-      zodiac = 'Cancer'
-    elif (longitude < 173.34):
-      zodiac = 'Leo'
-    elif (longitude < 224.17):
-      zodiac = 'Virgo'
-    elif (longitude < 242.57):
+    zodiac = 'Aries'
+    if (data['true_moon_longitude'] < 30): 
+        zodiac = 'Aries'
+    elif (data['true_moon_longitude'] < 60):  
+        zodiac = 'Taurus'
+    elif (data['true_moon_longitude'] < 90):
+        zodiac = 'Gemini'
+    elif (data['true_moon_longitude'] < 120): 
+        zodiac = 'Cancer'
+    elif (data['true_moon_longitude'] < 150): 
+        zodiac = 'Leo'
+    elif (data['true_moon_longitude'] < 180): 
+        zodiac = 'Virgo'
+    elif (data['true_moon_longitude'] < 210): 
       zodiac = 'Libra'
-    elif (longitude < 271.26):
+    elif (data['true_moon_longitude'] < 240): 
       zodiac = 'Scorpio'
-    elif (longitude < 302.49):
-      zodiac = 'Sagittarius'
-    elif (longitude < 311.72):
-      zodiac = 'Capricorn'
-    elif (longitude < 348.58):
-      zodiac = 'Aquarius'
-    else:
-      zodiac = 'Pisces'
+    elif (data['true_moon_longitude'] < 270): 
+        zodiac = 'Sagittarius'
+    elif (data['true_moon_longitude'] < 300):  
+        zodiac = 'Capricorn'
+    elif (data['true_moon_longitude'] < 330):  
+        zodiac = 'Aquarius'
+    elif (data['true_moon_longitude'] < 360):
+        zodiac = 'Pisces'
     return zodiac
+
 #
 ##
 #
 
 if __name__ == '__main__':
-    for i in range(0,61):
+    for i in range(160,200):
         date = DateTime.now()+timedelta(days=i)
         m = MoonPhase(date)
         s = """%s. The moon is %s, %.1f%% illuminated, %.1f days old. Zodiac sign is: %s, moon day: %s""" %\
-            (date.day, m.phase_text, m.illuminated * 100, m.age, m.zodiac_sign, ceil(m.age))
+            (date, m.phase_text, m.illuminated * 100, m.age, m.zodiac_sign, ceil(m.age))
         print (s)
