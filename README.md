@@ -6,9 +6,10 @@ pip install datetime, yattag
 Usage:
 python generate_html.py
 
-Generates an HTML document in the same folder - a moon calendar with info about current moon phase (data comes from moon.py by which I modified slightly)
+Generates an HTML document in the same folder - a moon calendar for current month (data comes from moon.py by which I modified slightly)
+Calendar contains moon (lunar) day, moon phase and zodiac sign for each day of the month. Current zodiac sign determination is not very precise, hopefully this will be fixed.
 
-TODO: pictures for moon phases (tricky illumination %) and zodiac signs (easy)
+moon.py by @keturn (modified)
 
 Icons by:
 https://www.flaticon.com/authors/bqlqn
