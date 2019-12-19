@@ -24,10 +24,11 @@ given date; and phase_hunt(), which given a date, finds the dates of
 the nearest full moon, new moon, etc.
 """
 
-from math import sin, cos, floor, sqrt, pi, tan, atan, asin, atan2, ceil
+from math import sin, cos, floor, sqrt, pi, tan, atan, asin, atan2, ceil, isclose
 import bisect
 from datetime import datetime as DateTime
 from datetime import timedelta
+from dateutil import rrule
 import sqlite3
 
 
@@ -339,10 +340,13 @@ def phase_hunt(sdate=DateTime.now()):
     which bound the current lunation.
     """
 
-    if not hasattr(sdate,'jdn'):
-        sdate = DateTime.DateTimeFromJDN(sdate)
+    if hasattr(sdate, "jdn"):
+        sdate = sdate.jdn - c.epoch
+    else:
+        con = sqlite3.connect(":memory:")
+        sdate = list(con.execute("select julianday('{}')".format(sdate)))[0][0] - c.epoch
 
-    adate = sdate + DateTime.RelativeDateTime(days=-45)
+    adate = sdate - float(timedelta(days=45).total_seconds())
 
     k1 = floor((adate.year + ((adate.month - 1) * (1.0/12.0)) - 1900) * 12.3685)
 
@@ -507,43 +511,83 @@ def kepler(m, ecc):
     return e
 
 def zodiac(date=DateTime.now()):
-    # returns current zodiac sign of the moon, not very accurate
-    data = phase(date)
-    zodiac = 'Aries'
-    if (data['true_moon_longitude'] < 30): 
-        zodiac = 'Aries'
-    elif (data['true_moon_longitude'] < 60):  
-        zodiac = 'Taurus'
-    elif (data['true_moon_longitude'] < 90):
-        zodiac = 'Gemini'
-    elif (data['true_moon_longitude'] < 120): 
-        zodiac = 'Cancer'
-    elif (data['true_moon_longitude'] < 150): 
-        zodiac = 'Leo'
-    elif (data['true_moon_longitude'] < 180): 
-        zodiac = 'Virgo'
-    elif (data['true_moon_longitude'] < 210): 
-      zodiac = 'Libra'
-    elif (data['true_moon_longitude'] < 240): 
-      zodiac = 'Scorpio'
-    elif (data['true_moon_longitude'] < 270): 
-        zodiac = 'Sagittarius'
-    elif (data['true_moon_longitude'] < 300):  
-        zodiac = 'Capricorn'
-    elif (data['true_moon_longitude'] < 330):  
-        zodiac = 'Aquarius'
-    elif (data['true_moon_longitude'] < 360):
-        zodiac = 'Pisces'
-    return zodiac
+    # returns time and sign of zodiac transition, 10:00 and sign if no transition today
+
+    def find_key_by_value(d, v, offset=0):
+        # used to return keys from zodiac_dict
+        for key, val in d.items():  
+            if val-offset == v:
+                return key
+
+    result_dict = {
+                   'moon_phase' : '',
+                   'phase_time' : '',
+                   'zodiac_sign': '',
+                   'zodiac_time': ''
+                   }
+                   
+    timezone = timedelta(hours=0)  # UTC +02:00
+
+    zodiac_dict = { 
+                    'Aries': 30,
+                    'Taurus': 60,
+                    'Gemini': 90,
+                    'Cancer': 120,
+                    "Leo": 150,
+                    'Virgo': 180,
+                    'Libra': 210,
+                    'Scorpio': 240,
+                    'Sagittarius': 270,
+                    'Capricorn': 300,
+                    'Aquarius': 330,
+                    'Pisces': 360
+                  }
+
+    # first loop tries to find zodiac transition and full/new moon timestamps
+    for hour in rrule.rrule(rrule.MINUTELY, dtstart=date, count=1440):
+        moon_data = phase(hour)
+        
+        # try to find full/new moon timestamps
+        if isclose(moon_data['phase'], 0.00, abs_tol=0.000035) and moon_data['phase'] < 0.5:
+            result_dict['moon_phase'] = 'new'
+            result_dict['phase_time'] = str(hour+timezone)
+        elif isclose(moon_data['illuminated'], 1.00, abs_tol=0.000000005) and moon_data['illuminated'] > 0.5:
+            result_dict['moon_phase'] = 'full'
+            result_dict['phase_time'] = str(hour+timezone)
+
+        # try to find zodiac transition and timestamp   
+        for value in zodiac_dict.values():
+            if int(moon_data['true_moon_longitude']) == 0 and result_dict['zodiac_time'] == '':
+                result_dict['zodiac_sign'] = 'Aries'
+                result_dict['zodiac_time'] = str(hour+timezone)
+                break
+            elif int(moon_data['true_moon_longitude']) == value and result_dict['zodiac_time'] == '':
+                result_dict['zodiac_sign'] = find_key_by_value(zodiac_dict, value, offset=30)
+                result_dict['zodiac_time'] = str(hour+timezone)
+                break
+        # print(hour, moon_data['true_moon_longitude'])
+
+    # second loop returns today's sign at 10:00 if no zodiac transitions were detected
+    for hour in rrule.rrule(rrule.MINUTELY, dtstart=date, count=1440):
+        moon_data = phase(hour)
+        if result_dict['zodiac_time'] == '' and result_dict['zodiac_sign'] == '':
+            for value in zodiac_dict.values():
+                if moon_data['true_moon_longitude'] < value and '10:00:00' in str(hour+timezone):
+                    result_dict['zodiac_sign'] = find_key_by_value(zodiac_dict, value)
+                    result_dict['zodiac_time'] = str(hour+timezone)    
+                    break 
+    
+    return result_dict
 
 #
 ##
 #
 
 if __name__ == '__main__':
-    for i in range(160,200):
-        date = DateTime.now()+timedelta(days=i)
+    for i in range(0,35):  # set number of days
+        date = DateTime.now() - timedelta(days=20-i)
+        date = date.replace(hour=0, minute=0, second=0, microsecond=0)  # get zero-hour for zodiac calculations
         m = MoonPhase(date)
-        s = """%s. The moon is %s, %.1f%% illuminated, %.1f days old. Zodiac sign is: %s, moon day: %s""" %\
-            (date, m.phase_text, m.illuminated * 100, m.age, m.zodiac_sign, ceil(m.age))
+        s = """%s. The moon is %s, %.1f%% illuminated, %.1f days old. Zodiac sign is: %s at %s, moon day: %s""" %\
+            (date, m.phase_text, m.illuminated * 100, m.age, m.zodiac_sign['zodiac_sign'], m.zodiac_sign['zodiac_time'][11:], ceil(m.age))
         print (s)
