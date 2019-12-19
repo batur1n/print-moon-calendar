@@ -30,8 +30,8 @@ class Moon_HTML_Printer():
     def print_html(self):
 
         doc, tag, text = Doc().tagtext()
-        date = datetime.now() + timedelta(hours=8)
-
+        date = datetime.now() # + timedelta(days=60)
+        
         cal = [['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']]
         cal.extend(calendar.monthcalendar(date.year,date.month))
 
@@ -49,18 +49,31 @@ class Moon_HTML_Printer():
                                 with tag("td"):
                                     with tag("th"):
                                         if elem != 0 and isinstance(elem, int):
-                                            m = MoonPhase(datetime.strptime(str(date.year) + '-' + str(date.month) + '-' + str(elem), '%Y-%m-%d'))
+                                            m = MoonPhase(datetime.strptime(str(date.year) + '-' + str(date.month) 
+                                            + '-' + str(elem) + '-00:00', '%Y-%m-%d-%H:%M'))
+
                                             with tag("p", style="font-size:50px;text-align:center;"):
                                                 text(str(elem))
                                             with tag("p", style="text-align:center;"):
-                                                text(str(ceil(m.age)) + ' moon day, ' + m.zodiac_sign)
-                                            # with tag("p"):
-                                            #     text("Moon is in " + m.phase_text + ' (' + str(ceil(m.illuminated*100)) + '%)')
-                                            with tag('p'):
-                                                doc.stag('img', src=self.get_picture_path(m.phase_text, ceil(m.illuminated*100)), 
-                                                height="75", width="75", align='left')
-                                                doc.stag('img', src=self.get_picture_path(m.zodiac_sign, None), 
-                                                height="75", width="75", align='right')
+                                                text(str(ceil(m.age)) + ' moon day, ' + m.zodiac_sign['zodiac_sign'])
+
+                                            doc.stag('img', src=self.get_picture_path(m.phase_text, ceil(m.illuminated*100)), 
+                                            height="75", width="75", align='left')                                   
+                                            doc.stag('img', src=self.get_picture_path(m.zodiac_sign['zodiac_sign'], None), 
+                                            height="75", width="75", align='right')
+
+                                            with tag('div'):
+                                                if m.zodiac_sign['moon_phase'] in ['new', 'full'] and m.zodiac_sign['phase_time'] != '':
+                                                    with tag('p', style="float:left;margin-left:20px;"):   
+                                                        text(m.zodiac_sign['phase_time'][11:-3])
+                                                if m.zodiac_sign['zodiac_time'][11:-3] not in ['10:00', '00:00']:
+                                                    with tag('p', style="float:right;margin-right:20px;"):
+                                                        text(m.zodiac_sign['zodiac_time'][11:-3])
+                                                if m.zodiac_sign['phase_time'] == '' and m.zodiac_sign['zodiac_time'][11:-3] in ['10:00', '00:00']:
+                                                    print(str(elem))
+                                                    with tag('div', style="height:100px;"):
+                                                        pass
+
                                         elif isinstance(elem, str):
                                             text(elem)
                                         elif elem == 0:
