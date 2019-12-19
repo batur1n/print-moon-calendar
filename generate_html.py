@@ -30,7 +30,7 @@ class Moon_HTML_Printer():
     def print_html(self):
 
         doc, tag, text = Doc().tagtext()
-        date = datetime.now() # + timedelta(days=60)
+        date = datetime.now() + timedelta(days=120)
         
         cal = [['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']]
         cal.extend(calendar.monthcalendar(date.year,date.month))
@@ -70,7 +70,6 @@ class Moon_HTML_Printer():
                                                     with tag('p', style="float:right;margin-right:20px;"):
                                                         text(m.zodiac_sign['zodiac_time'][11:-3])
                                                 if m.zodiac_sign['phase_time'] == '' and m.zodiac_sign['zodiac_time'][11:-3] in ['10:00', '00:00']:
-                                                    print(str(elem))
                                                     with tag('div', style="height:100px;"):
                                                         pass
 
@@ -81,6 +80,7 @@ class Moon_HTML_Printer():
 
         f = open('moon_calendar_{}_{}.html'.format(date.month, date.year), 'w')
         f.write(yattag.indent(doc.getvalue(), indent_text=True)) 
+        print('Successfully generated calendar: {}'.format(f.name))
         f.close()
 
 if __name__ == '__main__':

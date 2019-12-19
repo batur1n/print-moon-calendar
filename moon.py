@@ -526,7 +526,7 @@ def zodiac(date=DateTime.now()):
                    'zodiac_time': ''
                    }
                    
-    timezone = timedelta(hours=0)  # UTC +02:00
+    timezone = timedelta(hours=3)  # UTC +02:00
 
     zodiac_dict = { 
                     'Aries': 30,
@@ -557,7 +557,7 @@ def zodiac(date=DateTime.now()):
 
         # try to find zodiac transition and timestamp   
         for value in zodiac_dict.values():
-            if int(moon_data['true_moon_longitude']) == 0 and result_dict['zodiac_time'] == '':
+            if isclose(moon_data['true_moon_longitude'], 0.0, abs_tol=0.005) or moon_data['true_moon_longitude'] > 360.0 and result_dict['zodiac_time'] == '':
                 result_dict['zodiac_sign'] = 'Aries'
                 result_dict['zodiac_time'] = str(hour+timezone)
                 break
@@ -565,7 +565,6 @@ def zodiac(date=DateTime.now()):
                 result_dict['zodiac_sign'] = find_key_by_value(zodiac_dict, value, offset=30)
                 result_dict['zodiac_time'] = str(hour+timezone)
                 break
-        # print(hour, moon_data['true_moon_longitude'])
 
     # second loop returns today's sign at 10:00 if no zodiac transitions were detected
     for hour in rrule.rrule(rrule.MINUTELY, dtstart=date, count=1440):
@@ -584,8 +583,8 @@ def zodiac(date=DateTime.now()):
 #
 
 if __name__ == '__main__':
-    for i in range(0,35):  # set number of days
-        date = DateTime.now() - timedelta(days=20-i)
+    for i in range(0,45):  # set number of days
+        date = DateTime.now() + timedelta(days=90+i)
         date = date.replace(hour=0, minute=0, second=0, microsecond=0)  # get zero-hour for zodiac calculations
         m = MoonPhase(date)
         s = """%s. The moon is %s, %.1f%% illuminated, %.1f days old. Zodiac sign is: %s at %s, moon day: %s""" %\
