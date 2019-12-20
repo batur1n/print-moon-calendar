@@ -30,7 +30,7 @@ class Moon_HTML_Printer():
     def print_html(self):
 
         doc, tag, text = Doc().tagtext()
-        date = datetime.now() + timedelta(days=120)
+        date = datetime.now() + timedelta(days=7)
         
         cal = [['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']]
         cal.extend(calendar.monthcalendar(date.year,date.month))
