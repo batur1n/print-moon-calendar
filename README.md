@@ -17,7 +17,7 @@
 
 Generates an HTML document in the same folder - a moon calendar for current month (data comes from moon.py which I modified slightly)
 
-Calendar contains moon (lunar) days, moon phases and zodiac signs as well as times of their transitions for each day of the month. Timezone is hardcoded to UTC +02:00, language is English.
+Calendar contains moon (lunar) days, moon phases and zodiac signs as well as times of their transitions for each day of the month. Timezone is hardcoded to UTC +02:00, language is __Russian__ (can be changed back to English in generate_html.py code).
 
 # Acknowledgements
 
