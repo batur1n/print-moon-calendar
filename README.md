@@ -1,17 +1,19 @@
 # Windows instructions:
 
-0. Install Python 3.8
+0. Install latest Google Chrome (or any browser with HTML5/CSS3 support)
 1. Download generate_html.zip
 2. Unzip generate_html.zip
 3. Run generate_html.exe
+4. Open generated .html file in the same folder (starts with 'moon_calendar..') with browser
 
 # CLI/advanced user's instructions:
 
-0. Install Python 3.8
+0. Install Python 3.8 and latest Google Chrome (or any browser with HTML5/CSS3 support)
 1. Install dependencies: pip install datetime yattag dateutil
 2. (Optional) Install test dependencies: pip install pytest selenium
 3. (Optional) Run tests: pytest -v test_moon_calendar.py
 4. Run: python generate_html.py
+5. Open generated .html file in the same folder (starts with 'moon_calendar..') with browser
 
 # Description:
 
